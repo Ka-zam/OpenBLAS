@@ -121,6 +121,7 @@
 #define CORE_DHYANA	 29
 #define CORE_COOPERLAKE  30
 #define CORE_SAPPHIRERAPIDS  31
+#define CORE_ZEN5    32
 
 #define HAVE_SSE      (1 <<  0)
 #define HAVE_SSE2     (1 <<  1)
@@ -225,6 +226,7 @@ typedef struct {
 #define CPUTYPE_DHYANA			53
 #define CPUTYPE_COOPERLAKE		54
 #define CPUTYPE_SAPPHIRERAPIDS		55
+#define CPUTYPE_ZEN5			56
 
 #define CPUTYPE_HYGON_UNKNOWN		99
 

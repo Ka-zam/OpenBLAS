@@ -162,7 +162,7 @@ endif
 endif
 
 ifeq ($(CORE), ZEN)
-ifdef HAVE_AVX512VL	
+ifdef HAVE_AVX512VL
 ifndef NO_AVX512
 CCOMMON_OPT += -march=skylake-avx512
 ifneq ($(F_COMPILER), NAG)
@@ -177,6 +177,48 @@ ifeq ($(C_COMPILER), GCC)
 CCOMMON_OPT += -fno-asynchronous-unwind-tables
 FCOMMON_OPT += -fno-asynchronous-unwind-tables
 endif
+endif
+endif
+endif
+endif
+
+ifeq ($(CORE), ZEN5)
+ifndef NO_AVX512
+ifeq ($(C_COMPILER), GCC)
+ # znver4 support was added in GCC 12
+ ifeq ($(GCCVERSIONGTEQ12), 1)
+  CCOMMON_OPT += -march=znver4
+  ifneq ($(F_COMPILER), NAG)
+   FCOMMON_OPT += -march=znver4
+  endif
+ else  # gcc not support znver4, fallback to skylake-avx512
+  CCOMMON_OPT += -march=skylake-avx512
+  ifneq ($(F_COMPILER), NAG)
+   FCOMMON_OPT += -march=skylake-avx512
+  endif
+ endif
+else ifeq ($(C_COMPILER), CLANG)
+ # znver4 support was added in clang 15
+ ifeq ($(CLANGVERSIONGTEQ15), 1)
+  CCOMMON_OPT += -march=znver4
+  ifneq ($(F_COMPILER), NAG)
+   FCOMMON_OPT += -march=znver4
+  endif
+ else  # not supported in clang, fallback to skylake-avx512
+  CCOMMON_OPT += -march=skylake-avx512
+  ifneq ($(F_COMPILER), NAG)
+   FCOMMON_OPT += -march=skylake-avx512
+  endif
+ endif
+endif
+ifeq ($(OSNAME), CYGWIN_NT)
+CCOMMON_OPT += -fno-asynchronous-unwind-tables
+FCOMMON_OPT += -fno-asynchronous-unwind-tables
+endif
+ifeq ($(OSNAME), WINNT)
+ifeq ($(C_COMPILER), GCC)
+CCOMMON_OPT += -fno-asynchronous-unwind-tables
+FCOMMON_OPT += -fno-asynchronous-unwind-tables
 endif
 endif
 endif

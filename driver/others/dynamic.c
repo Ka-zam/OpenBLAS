@@ -233,6 +233,19 @@ extern gotoblas_t gotoblas_SAPPHIRERAPIDS;
 #else
 #define gotoblas_SAPPHIRERAPIDS gotoblas_PRESCOTT
 #endif
+#ifdef DYN_ZEN5
+extern gotoblas_t gotoblas_ZEN5;
+#elif defined(DYN_SKYLAKEX)
+#define gotoblas_ZEN5 gotoblas_SKYLAKEX
+#elif defined(DYN_HASWELL)
+#define gotoblas_ZEN5 gotoblas_HASWELL
+#elif defined(DYN_SANDYBRIDGE)
+#define gotoblas_ZEN5 gotoblas_SANDYBRIDGE
+#elif defined(DYN_NEHALEM)
+#define gotoblas_ZEN5 gotoblas_NEHALEM
+#else
+#define gotoblas_ZEN5 gotoblas_PRESCOTT
+#endif
 
 
 #else // not DYNAMIC_LIST
@@ -275,6 +288,7 @@ extern gotoblas_t  gotoblas_EXCAVATOR;
 #define gotoblas_SKYLAKEX gotoblas_SANDYBRIDGE
 #define gotoblas_COOPERLAKE gotoblas_SANDYBRIDGE
 #define gotoblas_ZEN gotoblas_SANDYBRIDGE
+#define gotoblas_ZEN5 gotoblas_SANDYBRIDGE
 #define gotoblas_SAPPHIRERAPIDS gotoblas_SANDYBRIDGE
 #else
 extern gotoblas_t  gotoblas_HASWELL;
@@ -283,10 +297,12 @@ extern gotoblas_t  gotoblas_ZEN;
 extern gotoblas_t  gotoblas_SKYLAKEX;
 extern gotoblas_t  gotoblas_COOPERLAKE;
 extern gotoblas_t  gotoblas_SAPPHIRERAPIDS;
+extern gotoblas_t  gotoblas_ZEN5;
 #else
 #define gotoblas_SKYLAKEX gotoblas_HASWELL
 #define gotoblas_COOPERLAKE gotoblas_HASWELL
 #define gotoblas_SAPPHIRERAPIDS gotoblas_HASWELL
+#define gotoblas_ZEN5 gotoblas_HASWELL
 #endif
 #endif
 #else
@@ -296,6 +312,7 @@ extern gotoblas_t  gotoblas_SAPPHIRERAPIDS;
 #define gotoblas_SKYLAKEX gotoblas_NEHALEM
 #define gotoblas_COOPERLAKE gotoblas_NEHALEM
 #define gotoblas_SAPPHIRERAPIDS gotoblas_NEHALEM
+#define gotoblas_ZEN5 gotoblas_NEHALEM
 #define gotoblas_BULLDOZER gotoblas_BARCELONA
 #define gotoblas_PILEDRIVER gotoblas_BARCELONA
 #define gotoblas_STEAMROLLER gotoblas_BARCELONA
@@ -911,6 +928,16 @@ static gotoblas_t *get_coretype(void){
 	    openblas_warning(FALLBACK_VERBOSE, BARCELONA_FALLBACK);
 	    return &gotoblas_BARCELONA; //OS doesn't support AVX. Use old kernels.
           }
+      } else if (exfamily == 11) {
+	  // Zen5
+	  if(support_avx512())
+	    return &gotoblas_ZEN5;
+	  if(support_avx())
+	    return &gotoblas_ZEN5;
+	  else{
+	    openblas_warning(FALLBACK_VERBOSE, BARCELONA_FALLBACK);
+	    return &gotoblas_BARCELONA; //OS doesn't support AVX. Use old kernels.
+          }
       }else {
 	return NULL;
       }
@@ -988,7 +1015,8 @@ static char *corename[] = {
     "Zen",
     "SkylakeX",
     "Cooperlake",
-    "SapphireRapids"
+    "SapphireRapids",
+    "Zen5"
 };
 
 char *gotoblas_corename(void) {
@@ -1054,6 +1082,7 @@ char *gotoblas_corename(void) {
   if (gotoblas == &gotoblas_SKYLAKEX)     return corename[24];
   if (gotoblas == &gotoblas_COOPERLAKE)   return corename[25];
   if (gotoblas == &gotoblas_SAPPHIRERAPIDS) return corename[26];
+  if (gotoblas == &gotoblas_ZEN5)         return corename[27];
   return corename[0];
 }
 
@@ -1066,7 +1095,7 @@ static gotoblas_t *force_coretype(char *coretype){
 	char message[128];
 	//char mname[20];
 
-	for ( i=1 ; i <= 25; i++)
+	for ( i=1 ; i <= 27; i++)
 	{
 		if (!strncasecmp(coretype,corename[i],20))
 		{
@@ -1084,8 +1113,10 @@ static gotoblas_t *force_coretype(char *coretype){
 
 	switch (found)
 	{
+		case 27: return (&gotoblas_ZEN5);
+		case 26: return (&gotoblas_SAPPHIRERAPIDS);
 		case 25: return (&gotoblas_COOPERLAKE);
-		case 24: return (&gotoblas_SKYLAKEX);	
+		case 24: return (&gotoblas_SKYLAKEX);
 		case 23: return (&gotoblas_ZEN);
 		case 22: return (&gotoblas_EXCAVATOR);
 		case 21: return (&gotoblas_STEAMROLLER);

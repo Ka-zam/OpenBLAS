@@ -1691,7 +1691,6 @@ int get_cpuname(void){
 	    return CPUTYPE_BARCELONA;
         }
       case 10: // Zen3/4
-      case 11: // Zen5
 #ifndef NO_AVX512
           if(support_avx512_bf16())
             return CPUTYPE_COOPERLAKE;
@@ -1705,7 +1704,20 @@ int get_cpuname(void){
 	    return CPUTYPE_SANDYBRIDGE; // Zen is closer in architecture to Sandy Bridge than to Excavator
 #endif
 	  else
-	    return CPUTYPE_BARCELONA;	      
+	    return CPUTYPE_BARCELONA;
+      case 11: // Zen5
+#ifndef NO_AVX512
+          if(support_avx512())
+            return CPUTYPE_ZEN5;
+#endif
+	if(support_avx())
+#ifndef NO_AVX2
+	    return CPUTYPE_ZEN5;
+#else
+	    return CPUTYPE_SANDYBRIDGE;
+#endif
+	  else
+	    return CPUTYPE_BARCELONA;
       }
       break;
     }
@@ -1887,6 +1899,7 @@ static char *cpuname[] = {
   "DHYANA",
   "COOPERLAKE",
   "SAPPHIRERAPIDS",
+  "ZEN5",
 };
 
 static char *lowercpuname[] = {
@@ -1945,6 +1958,7 @@ static char *lowercpuname[] = {
   "dhyana",
   "cooperlake",
   "sapphirerapids",
+  "zen5",
 };
 
 static char *corename[] = {
@@ -1980,6 +1994,7 @@ static char *corename[] = {
   "DHYANA",
   "COOPERLAKE",
   "SAPPHIRERAPIDS",
+  "ZEN5",
 };
 
 static char *corename_lower[] = {
@@ -2015,6 +2030,7 @@ static char *corename_lower[] = {
   "dhyana",
   "cooperlake",
   "sapphirerapids",
+  "zen5",
 };
 
 
@@ -2499,14 +2515,28 @@ int get_coretype(void){
 	  }
 	  break;
 	}
-      } else if (exfamily == 8 || exfamily == 10 || exfamily == 11) {
+      } else if (exfamily == 11) {
+	// Zen5
+#ifndef NO_AVX512
+          if(support_avx512())
+            return CORE_ZEN5;
+#endif
+	  if(support_avx())
+#ifndef NO_AVX2
+	    return CORE_ZEN5;
+#else
+	    return CORE_SANDYBRIDGE;
+#endif
+	  else
+	    return CORE_BARCELONA;
+      } else if (exfamily == 8 || exfamily == 10) {
 	switch (model) {
 	case 1:
 	  // AMD Ryzen
 	case 8:
 	  // Ryzen 2
 	default:
-	  // Matisse,Renoir Ryzen2 models		
+	  // Matisse,Renoir Ryzen2 models
 #ifndef NO_AVX512
           if(support_avx512_bf16())
             return CORE_COOPERLAKE;
